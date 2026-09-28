@@ -16,32 +16,19 @@ womputer
 
 **Claim comment**
 
-<!-- PASTE THE COMMENT PERMALINK HERE after posting. On the posted comment, use the
-"..." menu at its top right and choose "Copy link". It looks like
-https://github.com/codepath/pathreview-ai301-fa26-s1/issues/72#issuecomment-XXXXXXXXX -->
+https://github.com/codepath/pathreview-ai301-fa26-s1/issues/72#issuecomment-5864437082
 
-I'd like to pick this one up. On a fresh clone at `f89c06f`, `verify_password`
-in `core/security.py:37` calls `pwd_context.verify(...)` with no exception
-handling, so when the stored hash is not a recognisable format passlib raises
-`UnknownHashError` and it escapes to the caller instead of the function
-returning `False`. The covering test `test_verify_with_wrong_hash_format` is
-still marked `xfail(strict=True)` against manifest id H-05.
+I'd like to pick this one up. On a fresh clone at `f89c06f`, `verify_password` in `core/security.py:37` calls `pwd_context.verify(...)` with no exception handling, so when the stored hash is not a recognisable format passlib raises `UnknownHashError` and it escapes to the caller instead of the function returning `False`. The covering test `test_verify_with_wrong_hash_format` is still marked `xfail(strict=True)` against manifest id H-05.
 
-I see several classmates working this issue already. I'm reproducing and
-reporting independently rather than adding to their threads.
+I see several classmates working this issue already. I'm reproducing and reporting independently rather than adding to their threads.
 
-Next from me is a repro report with my environment, the exact commands, and
-the output they produced. If it reproduces I'll attempt the fix after that,
-which I expect means catching the passlib error in `verify_password` and
-dropping the xfail marker. This is my first contribution here, so tell me if
-I have the conventions wrong.
+Next from me is a repro report with my environment, the exact commands, and the output they produced. If it reproduces I'll attempt the fix after that, which I expect means catching the passlib error in `verify_password` and dropping the xfail marker. This is my first contribution here, so tell me if I have the conventions wrong.
 
 **Reproduction comment**
 
-<!-- PASTE THE COMMENT PERMALINK HERE after posting, same way as above. -->
+https://github.com/codepath/pathreview-ai301-fa26-s1/issues/72#issuecomment-5864448640
 
-**Reproduced.** `verify_password` raises `passlib.exc.UnknownHashError` instead
-of returning `False` when the stored hash is not a recognisable format.
+**Reproduced.** `verify_password` raises `passlib.exc.UnknownHashError` instead of returning `False` when the stored hash is not a recognisable format.
 
 **Environment**
 
@@ -49,8 +36,7 @@ of returning `False` when the stored hash is not a recognisable format.
 - Python: 3.14.6, fresh venv
 - passlib 1.7.4, bcrypt 4.3.0, pytest 9.1.1
 - Repo: fresh clone of this repository at commit `f89c06f`, clean working tree
-- No `.env` or Docker needed: every field on `Settings()` in `core/config.py`
-  has a default, so `core/security.py` imports standalone.
+- No `.env` or Docker needed: every field on `Settings()` in `core/config.py` has a default, so `core/security.py` imports standalone.
 
 **Steps**
 
@@ -63,8 +49,7 @@ pip install "passlib[bcrypt]" "bcrypt<5" "python-jose[cryptography]" \
 python -m pytest "tests/unit/test_security.py::TestSecurity::test_verify_with_wrong_hash_format" -rxX
 ```
 
-Then, to see the raised exception directly next to a control, save this as
-`repro72.py` in the repo root and run `python repro72.py`:
+Then, to see the raised exception directly next to a control, save this as `repro72.py` in the repo root and run `python repro72.py`:
 
 ```python
 from core.security import hash_password, verify_password
@@ -79,8 +64,7 @@ except Exception as e:
     print(f"failing  malformed hash            -> raised {type(e).__module__}.{type(e).__name__}: {e}")
 ```
 
-**Expected:** all three lines print a boolean. A hash that cannot be identified
-should fail closed and return `False`.
+**Expected:** all three lines print a boolean. A hash that cannot be identified should fail closed and return `False`.
 
 **Actual:** the two controls return booleans; the malformed hash raises.
 
@@ -111,20 +95,11 @@ passlib.exc.UnknownHashError: hash could not be identified
 
 **Two things I should flag rather than leave for someone else to find.**
 
-I ran on Python 3.14.6, while the other reports on this issue are on 3.11
-through 3.13. The failure is in passlib's hash identification step, which does
-not depend on the Python version, and the controls behave identically, so I do
-not think it matters here. Saying it anyway.
+I ran on Python 3.14.6, while the other reports on this issue are on 3.11 through 3.13. The failure is in passlib's hash identification step, which does not depend on the Python version, and the controls behave identically, so I do not think it matters here. Saying it anyway.
 
-The run also prints `(trapped) error reading bcrypt version` with an
-`AttributeError: module 'bcrypt' has no attribute '__about__'` above my output.
-That is the known passlib 1.7.4 / bcrypt 4.x version-probe mismatch, passlib
-traps it and continues, and it is unrelated to this issue. I left it in the
-paste rather than trimming it so the output matches what you would actually see.
+The run also prints `(trapped) error reading bcrypt version` with an `AttributeError: module 'bcrypt' has no attribute '__about__'` above my output. That is the known passlib 1.7.4 / bcrypt 4.x version-probe mismatch, passlib traps it and continues, and it is unrelated to this issue. I left it in the paste rather than trimming it so the output matches what you would actually see.
 
-**Next step:** attempt the fix, catching passlib's error inside
-`verify_password` so it returns `False`, and removing the `xfail` marker from
-`test_verify_with_wrong_hash_format`.
+**Next step:** attempt the fix, catching passlib's error inside `verify_password` so it returns `False`, and removing the `xfail` marker from `test_verify_with_wrong_hash_format`.
 
 ## Eval iterations
 
